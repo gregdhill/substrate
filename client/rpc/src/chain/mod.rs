@@ -121,7 +121,6 @@ where
 				self.client()
 					.import_notification_stream()
 					.map(|notification| Ok::<_, ()>(notification.header))
-					.compat()
 			},
 		)
 	}
@@ -151,7 +150,6 @@ where
 					.import_notification_stream()
 					.filter(|notification| future::ready(notification.is_new_best))
 					.map(|notification| Ok::<_, ()>(notification.header))
-					.compat()
 			},
 		)
 	}
@@ -180,7 +178,6 @@ where
 				self.client()
 					.finality_notification_stream()
 					.map(|notification| Ok::<_, ()>(notification.header))
-					.compat()
 			},
 		)
 	}
@@ -323,10 +320,10 @@ fn subscribe_headers<Block, Client, F, G, S, ERR>(
 	Client: HeaderBackend<Block> + 'static,
 	F: FnOnce() -> S,
 	G: FnOnce() -> Block::Hash,
-	ERR: ::std::fmt::Debug,
-	S: Stream<Item = Block::Header, Error = ERR> + Send + 'static,
+	ERR: std::fmt::Debug,
+	S: Stream<Item = std::result::Result<Block::Header, ERR>> + Send + 'static,
 {
-	subscriptions.add(subscriber, |sink| {
+	/*subscriptions.add(subscriber, |sink| {
 		// send current head right at the start.
 		let header = client
 			.header(BlockId::Hash(best_block_hash()))
@@ -340,10 +337,10 @@ fn subscribe_headers<Block, Client, F, G, S, ERR>(
 			.map_err(|e| warn!("Block notification stream error: {:?}", e));
 
 		sink.sink_map_err(|e| warn!("Error sending notifications: {:?}", e))
-			.send_all(stream::iter_result(vec![Ok(header)]).chain(stream))
+			.send_all(stream::iter(vec![Ok(header)]).chain(stream))
 			// we ignore the resulting Stream (if the first stream is over we are unsubscribed)
 			.map(|_| ())
-	});
+	});*/
 }
 
 fn client_err(err: sp_blockchain::Error) -> Error {
