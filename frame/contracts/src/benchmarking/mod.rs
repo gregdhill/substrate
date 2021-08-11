@@ -40,7 +40,7 @@ use codec::Encode;
 use frame_benchmarking::{account, benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_support::weights::Weight;
 use frame_system::{Pallet as System, RawOrigin};
-use pallet_contracts_primitives::RentProjection;
+use pallet_contracts_primitives::{Code, RentProjection};
 use pwasm_utils::parity_wasm::elements::{BlockType, BrTableData, Instruction, ValueType};
 use sp_runtime::traits::{Bounded, Hash, Zero};
 use sp_std::{convert::TryInto, default::Default, vec, vec::Vec};
@@ -2534,6 +2534,25 @@ benchmarks! {
 		}
 		#[cfg(not(feature = "std"))]
 		return Err("Run this bench with a native runtime in order to see the schedule.");
+	}: {}
+
+	#[extra]
+	macro_erc20_transfer {
+		let code = Code::Upload(Bytes(include_bytes!("../../benchmarks/erc20.wasm").to_vec()));
+		T::Currency::make_free_balance_be(&whitelisted_caller(), caller_funding::<T>());
+		let data: ([u8; 4], BalanceOf<T>) = ([0x9b, 0xae, 0x9d, 0x5e], 1000u32.into());
+		let outcome = <Contracts<T>>::bare_instantiate(
+			whitelisted_caller(),
+			Endow::max::<T>(),
+			Weight::MAX,
+			code,
+			data.encode(),
+			Vec::new(), //salt
+			false, // no projection
+			false, // no debug,
+		);
+		let result = outcome.result?;
+		println!("output: {:#?}", result);
 	}: {}
 }
 
