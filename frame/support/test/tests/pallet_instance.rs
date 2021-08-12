@@ -109,7 +109,7 @@ pub mod pallet {
 	}
 
 	#[pallet::event]
-	#[pallet::metadata(BalanceOf<T, I> = "Balance", u32 = "Other")]
+	#[pallet::metadata(BalanceOf<T, I> = "Balance", u32 = "Other", u128 = "LargeNumber")]
 	#[pallet::generate_deposit(fn deposit_event)]
 	pub enum Event<T: Config<I>, I: 'static = ()> {
 		/// doc comment put in metadata
@@ -117,6 +117,7 @@ pub mod pallet {
 		/// doc
 		Spending(BalanceOf<T, I>),
 		Something(u32),
+		Broken(Vec<(u64, u128)>),
 	}
 
 	#[pallet::storage]
@@ -677,6 +678,11 @@ fn metadata() {
 			EventMetadata {
 				name: DecodeDifferent::Decoded("Something".to_string()),
 				arguments: DecodeDifferent::Decoded(vec!["Other".to_string()]),
+				documentation: DecodeDifferent::Decoded(vec![]),
+			},
+			EventMetadata {
+				name: DecodeDifferent::Decoded("Broken".to_string()),
+				arguments: DecodeDifferent::Decoded(vec!["Vec<(u64, LargeNumber)>".to_string()]),
 				documentation: DecodeDifferent::Decoded(vec![]),
 			},
 		])),
